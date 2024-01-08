@@ -63,7 +63,12 @@ temp[temp$variable %in% c("VarG_TPE") & temp$Scenario %in% c("Pheno_noGEI","GS_n
   temp[temp$variable %in% c("VarG_MET") & temp$Scenario %in% c("Pheno_noGEI","GS_noGEI"),]$value_mean
 temp[temp$variable %in% c("acc_Mean_estMETtoTPE") & temp$Scenario %in% c("Pheno_noGEI","GS_noGEI"),]$value_mean <-
   temp[temp$variable %in% c("acc_Mean_estMETtoMET") & temp$Scenario %in% c("Pheno_noGEI","GS_noGEI"),]$value_mean
-# Set MET-TPE alignment for Pheno programs
+# Set mean and variance for Pheno_GEI programs because MET is limited to single year
+temp[temp$variable %in% c("Mean_MET") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean <-
+  temp[temp$variable %in% c("estMean_MET") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean
+temp[temp$variable %in% c("VarG_MET") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean <-
+  temp[temp$variable %in% c("VarG_subMET") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean
+# Set MET-TPE alignment for Pheno_GEI programs because MET is limited to single year
 temp[temp$variable %in% c("acc_Mean_METtoTPE") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean <-
   temp[temp$variable %in% c("acc_Mean_subMETtoTPE") & temp$Scenario %in% c("PhenoGEI_1-0"),]$value_mean
 # Set MET-TPE alignment for EYT stage where GS is not used
@@ -182,11 +187,12 @@ palette <- (c(rep("black",1),
     droplevels() %>% 
     ggplot(aes(x = Year, y = value_mean)) +
     facet_grid(variable ~ Program, scales = "fixed") +
-    # geom_vline(data = df_line, aes(xintercept = hline), linetype = "dashed") +
     geom_line(aes(color = GEI), linewidth = 0.8) +
+    # facet_grid(Stage ~ variable, scales = "fixed") + # plot all stages
+    # geom_line(aes(linetype = GEI, color = Scenario), linewidth = 0.8) +  # plot all stages
     scale_linetype_manual(values=c("twodash", "solid")) +
     ylab("Genetic gain") + 
-    scale_y_continuous(limits = c(-0.1, 12), breaks = seq(0, 12, 2)) +
+    scale_y_continuous(limits = c(-0.5, 12), breaks = seq(0, 12, 2)) +
     xlim(0,20) +
     scale_colour_manual(values = palette, aesthetics = c("colour", "fill")) +
     optns +
@@ -204,8 +210,9 @@ ggsave(plot = a, filename ="01trackProgress_Mean.pdf", width = 4, height = 3, sc
     droplevels() %>% 
     ggplot(aes(x = Year, y = value_mean)) +
     facet_grid(variable ~ Program, scales = "fixed") +
-    # geom_vline(data = df_line, aes(xintercept = hline), linetype = "dashed") +
     geom_line(aes(color = GEI), linewidth = 0.8) +
+    # facet_grid(Stage ~ variable, scales = "fixed") + # plot all stages
+    # geom_line(aes(linetype = GEI, color = Scenario), linewidth = 0.8) +  # plot all stages
     scale_linetype_manual(values=c("twodash", "solid")) +
     ylab("Variance") + 
     xlim(0,20) +
@@ -225,11 +232,12 @@ ggsave(plot = b, filename ="02trackProgress_Var.pdf", width = 4, height = 3, sca
     droplevels() %>% 
     ggplot(aes(x = Year, y = value_mean)) + 
     facet_grid(variable ~ Program, scales = "fixed") +
-    # geom_vline(data = df_line, aes(xintercept = hline), linetype = "dashed") +
     geom_line(aes(color = GEI), linewidth = 0.8) +
+    # facet_grid(Stage ~ variable, scales = "fixed") + # plot all stages
+    # geom_line(aes(linetype = GEI, color = Scenario), linewidth = 0.8) +  # plot all stages
     scale_linetype_manual(values=c("twodash", "solid")) +
     ylab("Accuracy") +
-    ylim(-0.5,1) +
+    ylim(0,1) +
     xlim(0,20) +
     scale_colour_manual(values = palette, aesthetics = c("colour", "fill")) +
     optns +
@@ -237,6 +245,3 @@ ggsave(plot = b, filename ="02trackProgress_Var.pdf", width = 4, height = 3, sca
           strip.text.y = element_text(size = 14),
           plot.margin = unit(c(0, 0, 0, 0), "cm")))
 ggsave(plot = c, filename ="03trackProgress_Acc.pdf", width = 5, height = 5, scale = 1.7)
-
-# (p <- ggarrange(a, b, c, nrow = 3, common.legend = T, legend = "right", align = "hv", heights = c(1,1.2,1.7)))
-# ggsave(plot = p, filename ="trackProgress_MeanAll.pdf", width = 5, height = 12, scale = 1.8)

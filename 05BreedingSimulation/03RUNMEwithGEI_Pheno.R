@@ -70,7 +70,7 @@ for(year in 1:nCycles){
   time = timestamp(prefix = "",suffix = "",quiet = T)
   cat("Working on year: ",year,"    (",time,")  \n", sep = "")
   
-  #-- Subset aLamMET to that year's MET
+  #-- Obtain environmental covariates for that simulation year (or MET)
   if (year <= nYearsTP) {
     # Phenotypic selection first 3 years where MET is just current year's data 
     METsample = c(matrix(((year-1)*nEnvs+1):((year+nYearsTP-1)*nEnvs),nrow=nEnvs))
@@ -78,7 +78,7 @@ for(year in 1:nCycles){
   } else {
     # Reverse order so that current year's trials come first
     METsample = c(matrix(((year-nYearsTP)*nEnvs+1):(year*nEnvs),nrow=nEnvs)[,nYearsTP:1])
-    nEnvsMET = nEnvs*nYearsTP # do not change
+    nEnvsMET = 20 # do not change
   }
   tmp_aLamMET = subsetLam(aLamMET, subset = METsample)
   

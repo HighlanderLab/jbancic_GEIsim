@@ -8,42 +8,67 @@
 
 
 ################################################
-
+# Description
 # This function simulates a between-environment genetic correlation matrix
+# The function was adapted from Hardin et al. 2013
 
-simCmat = function (n_groups = 1,   # no. environment n_groups
-                    n_envs = 20,    # no. environments within each group
-                    mean_cor = 0.5, # base correlation within n_groups
-                    delta = 0,      # base correlation between n_groups
-                    epsilon,        # range in correlations within and across groups
-                    rank = 6,       # rank of the noise (no. eigenvectors)
-                    skew = 0){      # amount of skewness, no skewness = 1 
+##' @param n_groups no. environment n_groups
+##' @param n_envs no. environments within each group
+##' @param mean_cor base correlation within n_groups
+##' @param delta base correlation between n_groups
+##' @param epsilon range in correlations within and across groups
+##' @param rank rank of the noise (no. eigenvectors)
+##' @param skew amount of skewness, no skewness = 1 
+
+simCmat <- function(n_groups = 1,   
+                    n_envs = 20,     
+                    mean_cor = 0.5,  
+                    delta = 0,       
+                    epsilon,         
+                    rank = 6,        
+                    skew = 0) {       
   
-  if(length(n_envs) == 1 & n_groups > 1){n_envs <- rep(n_envs, n_groups)}
-  if(length(mean_cor) == 1 & n_groups > 1){mean_cor <- rep(mean_cor, n_groups)}
+  if (length(n_envs) == 1 & n_groups > 1) {
+    n_envs <- rep(n_envs, n_groups)
+  }
   
-  if(skew < -1 | skew > 1){
+  if (length(mean_cor) == 1 & n_groups > 1) {
+    mean_cor <- rep(mean_cor, n_groups)
+  }
+  
+  if (skew < -1 | skew > 1) {
     stop("The skew value must be between -1 and 1")
   }
+  
   skew.abs <- abs(skew)
   tot_envs <- sum(n_envs)
   base_cor <- matrix(rep(delta, tot_envs * tot_envs), ncol = tot_envs)
-  for(i in 1:n_groups){
+  
+  for (i in 1:n_groups) {
     cor <- matrix(rep(mean_cor[i], n_envs[i] * n_envs[i]), ncol = n_envs[i])
-    if (i == 1){base_cor[1:n_envs[1], 1:n_envs[1]] <- cor}
-    if (i != 1){base_cor[(sum(n_envs[1:(i - 1)]) + 1):sum(n_envs[1:i]), 
-                         (sum(n_envs[1:(i - 1)]) + 1):sum(n_envs[1:i])] <- cor}
+    if (i == 1) {
+      base_cor[1:n_envs[1], 1:n_envs[1]] <- cor
+    }
+    if (i != 1) {
+      base_cor[(sum(n_envs[1:(i - 1)]) + 1):sum(n_envs[1:i]), 
+               (sum(n_envs[1:(i - 1)]) + 1):sum(n_envs[1:i])] <- cor
+    }
   }
+  
   diag(base_cor) <- 1 - epsilon
   eivect <- c()
-  for (i in 1:tot_envs){
-    ei <- runif(rank, -1, 1*(1-skew.abs))
-    eivect <- cbind(eivect, sqrt(epsilon) * ei/sqrt(sum(ei^2)))
+  
+  for (i in 1:tot_envs) {
+    ei <- runif(rank, -1, 1 * (1 - skew.abs))
+    eivect <- cbind(eivect, sqrt(epsilon) * ei / sqrt(sum(ei^2)))
   }
+  
   Cmat <- base_cor + t(eivect) %*% eivect
-  if (skew < 0){
+  
+  if (skew < 0) {
     Cmat <- -Cmat
   }
+  
   return(Cmat)
   # bend non-positive definite matrices
 }
@@ -53,6 +78,11 @@ simCmat = function (n_groups = 1,   # no. environment n_groups
 
 # This function quantifies the variance explained by non-crossover 
 # and crossover interaction in a between-environment genetic correlation matrix
+
+##' @param cov_mat between-environment genetic variance matrix
+##' @param prop (logic) provide proportion rather than variance
+##' @param disentangle (logic) disentangle GxE protion of variance to crossover and noncrossover
+##' @param groups 
 
 measureGEI <- function(cov_mat,
                        prop = TRUE,
@@ -110,106 +140,147 @@ measureGEI <- function(cov_mat,
 ################################################
 
 # This functions plots and orders between-environment genetic correlation matrix
+# The function returns an object with heatmap of the matrix, histogram of 
+# pairwise correlations, data, and dendrogam order (if set to TRUE)
+
+##' @param cov_mat between-environment genetic correlation matrix
+##' @param den_order (logic) order matrix according to dendrogram 
+##' @param groups provide group dimensions as list
+##' @param axis_title name of the axes
 
 plotCmat <- function(cor_mat, 
                      den_order = TRUE, 
                      groups = NULL,
-                     axis_title = "Environment"){
+                     axis_title = "Environment") {
   require(cluster)
   require(tidyr)
   require(ggplot2)
   
   tot_envs <- ncol(cor_mat)
+  
   env_order1 <- 1:tot_envs
-  if(is.null(colnames(cor_mat)) | is.null(rownames(cor_mat))){colnames(cor_mat) <- rownames(cor_mat) <- env_order1}
+  if (is.null(colnames(cor_mat)) | is.null(rownames(cor_mat))) {
+    colnames(cor_mat) <- rownames(cor_mat) <- env_order1
+  }
+  
   cor_mat <- as.matrix(cor_mat)
-  if(isSymmetric(cor_mat) != TRUE){stop("Matrix is not symmetric")}
+  
+  if (isSymmetric(cor_mat) != TRUE) {
+    stop("Matrix is not symmetric")
+  }
+  
   Vmat = FALSE
   if (length(table(diag(cor_mat))) > 1) {
-    Vmat = TRUE; print("Matrix does not have 1s on the diagonal. Assuming this is a variance matrix")
+    Vmat = TRUE
+    print("Matrix does not have 1s on the diagonal. Assuming this is a variance matrix")
   }
+  
   env_order2 <- colnames(cor_mat)
-  if (!is.null(groups)){
-    if(length(unlist(groups)) != tot_envs){stop("Groups specified do not conform with 'cor_mat'")}
-    if(!is.list(groups)){stop("'groups' must be a list")}
+  
+  if (!is.null(groups)) {
+    if (length(unlist(groups)) != tot_envs) {
+      stop("Groups specified do not conform with 'cor_mat'")
+    }
+    if (!is.list(groups)) {
+      stop("'groups' must be a list")
+    }
     n_groups <- length(groups)
     n_envs <- unlist(lapply(groups, function(x) length(x)))
   }
-  if(den_order){
-    if (!is.null(groups)){
-      dis_mat_list <- lapply(groups, function(x) 1 - cor_mat[x,x])
-      env_order1 <- unlist(lapply(dis_mat_list, function(x) colnames(x)[agnes(x = x, diss = TRUE, method = "average")$order]))
+  
+  if (den_order) {
+    if (!is.null(groups)) {
+      dis_mat_list <- lapply(groups, function(x) 1 - cor_mat[x, x])
+      env_order1 <- unlist(lapply(dis_mat_list, 
+                                  function(x) colnames(x)[agnes(x = x, diss = TRUE, method = "average")$order]))
       env_order2 <- colnames(cor_mat)[as.numeric(env_order1)]
     }
-    if(is.null(groups)){
+    if (is.null(groups)) {
       dis_mat <- 1 - cor_mat
       env_order1 <- agnes(x = dis_mat, diss = TRUE, method = "average")$order
       env_order2 <- colnames(cor_mat)[as.numeric(env_order1)]
     } 
   }
+  
   cor.df <- gather(as.data.frame(cor_mat[env_order2, env_order2]))
   names(cor.df) <- c('Env1', "Cor")
   cor.df$Env1 <- factor(cor.df$Env1, levels = rev(env_order2))
   cor.df$Env2 <- factor(rep(env_order2, times = tot_envs), levels = env_order2)
-  cor.df <- cor.df[order(cor.df$Env1, cor.df$Env2),]
+  cor.df <- cor.df[order(cor.df$Env1, cor.df$Env2), ]
   rownames(cor.df) <- NULL
-  cor.df <- cor.df[,c("Env1","Env2","Cor")]
-  if (Vmat == FALSE) {cor.df$Cor[cor.df$Env1 == cor.df$Env2] <- NA}
+  cor.df <- cor.df[, c("Env1", "Env2", "Cor")]
   
-  # hh <- rev(rainbow(256, start = 0, end = 2/3))
-  hh <- rev(rainbow(256, start = 0, end = 2/3))[c(5:100,150:250)]
-  pp <- ggplot(data = cor.df, aes(y= Env1, x = Env2, fill=Cor)) + geom_tile() +
+  if (Vmat == FALSE) {
+    cor.df$Cor[cor.df$Env1 == cor.df$Env2] <- NA
+  }
+  
+  hh <- rev(rainbow(256, start = 0, end = 2/3))[c(5:100, 150:250)]
+  pp <- ggplot(data = cor.df, aes(y = Env1, x = Env2, fill = Cor)) + 
+    geom_tile() +
     labs(x = axis_title, y = axis_title) +
-    scale_fill_gradientn(colours = hh, na.value = "white", limits= c(-1.1,1.1)) +
+    scale_fill_gradientn(colours = hh, na.value = "white", limits = c(-1.1, 1.1)) +
     theme(axis.title.y = element_text(vjust = 1),
           axis.title.x = element_text(vjust = -1))
+  
   if (Vmat == TRUE) {
-    # hh <- hsv(seq(0.5,0.65,length.out = 100))
-    hh <- hsv(seq(0.5,0.68,length.out = 200), 1, 0.9)
+    hh <- hsv(seq(0.5, 0.68, length.out = 200), 1, 0.9)
     pp <- pp + scale_fill_gradientn(colours = hh, na.value = "white") +
       labs(fill = "Var")
   }
   
   cor.df2 <- data.frame(Source = "All correlations",
-                        Cor = cor.df[order(cor.df$Env1, rev(cor.df$Env2)),][lower.tri(cor_mat, diag= F),]$Cor)
+                        Cor = cor.df[order(cor.df$Env1, rev(cor.df$Env2)), ][lower.tri(cor_mat, diag = F), ]$Cor)
+  
   cor.df2$Mean <- mean(cor.df2$Cor)
-  qq <- ggplot(data = cor.df2, aes(Cor)) + geom_histogram(bins = 20, color = "black", fill = "grey") +
-    labs(x = paste0("Pair-wise correlations between ", tolower(axis_title),"s")) + 
+  qq <- ggplot(data = cor.df2, aes(Cor)) + 
+    geom_histogram(bins = 20, color = "black", fill = "grey") +
+    labs(x = paste0("Pair-wise correlations between ", tolower(axis_title), "s")) + 
     geom_vline(aes(xintercept = Mean), linetype = 2, colour = "steelblue", linewidth = 0.6) + 
     theme(axis.title.y = element_text(vjust = 2),
           axis.title.x = element_text(vjust = -1))
   
-  if (!is.null(groups)){
+  if (!is.null(groups)) {
     frames <- data.frame(Env1 = cumsum(c(0.5, n_envs))[1:n_groups],
                          Env2 =  cumsum(c(tot_envs + 0.5, -n_envs))[1:n_groups])
+    
     pp <- pp + geom_rect(data = frames, linewidth = 0.5, fill = NA, colour = "black",
-                         aes(xmin = Env1, xmax = Env1+n_envs,
-                             ymin = Env2, ymax = Env2-n_envs))
+                         aes(xmin = Env1, xmax = Env1 + n_envs,
+                             ymin = Env2, ymax = Env2 - n_envs))
     
     cor.df3 <- data.frame(Source = "Correlations within groups",
-                          Cor = unlist(lapply(groups, function(x) cor_mat[x,x][upper.tri(cor_mat[x,x])])))
+                          Cor = unlist(lapply(groups, function(x) cor_mat[x, x][upper.tri(cor_mat[x, x])])))
+    
     cor.df3$Mean <- mean(cor.df3$Cor)
     cor_mat2 <- cor_mat
-    for(i in 1:n_groups){cor_mat2[groups[[i]],groups[[i]]] <- NA}
+    
+    for (i in 1:n_groups) {
+      cor_mat2[groups[[i]], groups[[i]]] <- NA
+    }
+    
     cor.df4 <- data.frame(Source = "Correlations between groups",
                           Cor = cor_mat2[upper.tri(cor_mat2)])
-    cor.df4 <- cor.df4[!is.na(cor.df4$Cor),]
+    
+    cor.df4 <- cor.df4[!is.na(cor.df4$Cor), ]
     cor.df4$Mean <- mean(cor.df4$Cor)
+    
     cor.df5 <- rbind(cor.df2, cor.df3, cor.df4)
     cor.df5$Source <- factor(cor.df5$Source, levels = c("Correlations within groups", "Correlations between groups", "All correlations"))
-    qq <- ggplot(data = cor.df5, aes(Cor)) + geom_histogram(bins = 20, color = "black", fill = "grey") +
-      labs(x = paste0("Pair-wise correlations between ", tolower(axis_title),"s")) + 
+    
+    qq <- ggplot(data = cor.df5, aes(Cor)) + 
+      geom_histogram(bins = 20, color = "black", fill = "grey") +
+      labs(x = paste0("Pair-wise correlations between ", tolower(axis_title), "s")) + 
       geom_vline(aes(xintercept = Mean), linetype = 2, colour = "steelblue", linewidth = 0.6) + 
       theme(axis.title.y = element_text(vjust = 2),
             axis.title.x = element_text(vjust = -1)) + facet_wrap(~Source)
   }
+  
   temp <- list(heatmap = pp, hist = qq, data = cor.df, order = env_order1)
   return(temp)
 }
 
 ################################################
 
-# This function a between-environment genetic correlation matrix
+# This function simulates a MET dataset given the specified parameters
 
 simPheno <- function(n_genos,            # number of genotypes
                      Cmat,               # between-environment genetic correlation matrix
@@ -304,16 +375,14 @@ simPheno <- function(n_genos,            # number of genotypes
                        e,
                        y)
   # Return object
-  return(df <- list(Ce      = Ce,
-                    Ge      = Ge,
-                    trueG   = rowMeans(matrix(u, ncol = n_envs, byrow = F)), # main effs
-                    trueGE = matrix(u, ncol = n_envs, byrow = F), # genotype by environment (GxE) interaction effects
-                    varG    = diag(De),
-                    varE    = var_R,
-                    met.df  = met.df))
+  return(df <- list(Ce      = Ce, # between-environment genetic correlation matrix
+                    Ge      = Ge, # between-environment genetic variance matrix
+                    trueG   = rowMeans(matrix(u, ncol = n_envs, byrow = F)), # true main effects
+                    trueGE  = matrix(u, ncol = n_envs, byrow = F), # true genotype by environment (GxE) interaction effects
+                    varG    = diag(De), # true environment genetic variances
+                    varE    = var_R, # true error variances
+                    met.df  = met.df)) # simulated met dataset
 }
 
 
 # test <- simPheno(Ce, n_genos = 100, mu = 1, varE = 1, n_reps = 2, h2 = 0.3, prop_spatial = 0, n_cols = 20, n_rows = 10)
-# str(test)
-# cor(test$y,test$u)

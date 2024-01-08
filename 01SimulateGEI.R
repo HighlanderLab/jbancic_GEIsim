@@ -46,9 +46,9 @@ p  = 100  # Number of environments
 # stop function: out of range, respecify epsilon and/or mean_cor
 # is abs(supplied) value > 0.99 - abs(mean_cor)
 Ce = simCmat(n_envs = p,
-               mean_cor = 0.999-0.5,
-               rank = 6, 
-               epsilon = 0.5)
+             mean_cor = 0.999-0.5,
+             rank = 6, 
+             epsilon = 0.5)
 plotCmat(Ce, den_order = T)$heat
 plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
@@ -85,10 +85,10 @@ measureGEI(Ge, disentangle = T)$cGEI
 # ---- 2. Example with skewed distribution of correlations ----
 # i) Low crossover GEI
 Ce = simCmat(n_envs = p,
-               mean_cor = 0.5,
-               epsilon = 0.999-0.5,
-               rank = 6,
-               skew = 0.5)
+             mean_cor = 0.5,
+             epsilon = 0.999-0.5,
+             rank = 6,
+             skew = 0.5)
 plotCmat(Ce, den_order = T)$heatmap
 plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
@@ -116,10 +116,10 @@ measureGEI(Ge, disentangle = T)$cGEI
 
 # ii) Moderate crossover GxE
 Ce = simCmat(n_envs = p,
-               mean_cor = 0.2,
-               epsilon = 0.95-0.2,
-               rank = 6,
-               skew = 0.5)
+             mean_cor = 0.2,
+             epsilon = 0.95-0.2,
+             rank = 6,
+             skew = 0.5)
 plotCmat(Ce, den_order = T)$heatmap
 plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
@@ -147,10 +147,10 @@ measureGEI(Ge, disentangle = T)$cGEI
 
 # iii) High crossover GxE
 Ce = simCmat(n_envs = p,
-               mean_cor = 0,
-               epsilon = 1,
-               rank = 6,
-               skew = 0.35)
+             mean_cor = 0,
+             epsilon = 1,
+             rank = 6,
+             skew = 0.35)
 plotCmat(Ce, den_order = T)$heatmap
 plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
@@ -194,14 +194,16 @@ plotCmat(Ce, den_order = T, groups = list(1:50,51:200))$order
 # Method 2: structured GxY interaction
 #######################################################
 
-
+# TO DO
 
 #######################################################
 # Method 3: structured GxL interaction
 #######################################################
 
-
+# TO DO
 
 #######################################################
 # Method 4: structured GxY and GxL interaction
 #######################################################
+
+# TO DO

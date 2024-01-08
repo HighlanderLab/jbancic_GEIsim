@@ -1,4 +1,4 @@
-# Script name: Basic framework to simulate phenotypic data (Appendix 1)
+# Script name: Basic framework to simulate phenotypic data (Appendix A)
 #
 # Authors: Jon Bancic, Gregor Gorjanc, Daniel Tolhurst
 #
@@ -23,60 +23,64 @@ lapply(packages, library, character.only = TRUE)
 #> Initial parameters
 set.seed(123) # do not change
 p  = 10   # Environments
-q  = 2    # Replicated trials
+b  = 2    # Blocks
 v  = 200  # Genotypes
 mu = 4    # Trait mean
-h2 = 0.3  # Plot-level heritability
+H2 = 0.3  # Plot-level heritability
+k  = 7    # No. of multiplicative terms
 
 #> Simulate environmental effects
-X   = kronecker(diag(p), rep(1, v * q))
-tau = scale(rnorm(p))
+X   = kronecker(diag(p), rep(1, v * b))
+tau = rnorm(p, 0, 1)
 
-#> Simulate genetic effects
-# Obtain and decompose variance matrix
+#> Simulate GE effects
+# 1. Simulate Ge
 Ce = matrix(0, p, p)
 Ce[upper.tri(Ce,F)] = runif(p * (p - 1)/2, 0.4, 1)
 Ce = Ce + t(Ce); diag(Ce) = 1
 De = diag(rgamma(n = p, shape = 1.5, scale = 1))
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
-S  = svd(Ge)$u
-D  = diag(svd(Ge)$d)
 
-# Simulate genotype slopes
-slopes = scale(matrix(rnorm(p * v), ncol = p))
-slopes = c(matrix(slopes, ncol = p) %*% sqrt(D))
+# 2. Decompose Ge and take first k terms
+U = svd(Ge)$u[,1:k]
+L = diag(svd(Ge)$d[1:k])
 
-# Simulate GE interaction effects
-Z = kronecker(diag(v * p), rep(1, q))
+# 3. Obtain covariates and slopes
+S = U
+slopes = scale(matrix(rnorm(k * v), ncol = k))
+slopes = c(matrix(slopes, ncol = k) %*% sqrt(L))
+
+# 4. Construct GE effects 
+Z = kronecker(diag(v * p), rep(1, b))
 u = kronecker(S, diag(v)) %*% slopes
 
 # Obtain genotype main effects
-g = rowMeans(matrix(u, ncol = p))
+ug = rowMeans(matrix(u, ncol = p))
 
 #> Simulate plot errors
-h2 = abs(rnorm(p, h2, 0.1))
-h2[h2 < 0] = 0; h2[h2 > 1] = 1
-R  = diag(diag(De) / h2 - diag(De))
-e  = c(matrix(rnorm(p*q*v), ncol = p) %*% sqrt(R))
+H2 = abs(rnorm(p, H2, 0.1))
+H2[H2 < 0] = 0; H2[H2 > 1] = 1
+R  = diag(diag(De) / H2 - diag(De))
+e  = c(matrix(rnorm(p*b*v), ncol = p) %*% sqrt(R))
 
 #> Create phenotypes
 y = mu + X %*% tau + Z %*% u + e
 
 # Construct MET dataset
 df.MET = data.frame(
-  id  = factor(rep(1:v, each = q)),
-  env = factor(rep(1:p, each = v * q)),
-  rep = factor(1:q),
+  env = factor(rep(1:p, each = v * b)),
+  rep = factor(1:b),
+  id  = factor(rep(1:v, each = b)),
   y = y,
-  u = rep(u, each = q),
+  u = rep(u, each = b),
   e = e
   )
 
 # Order MET and randomise by trial
 df.MET = df.MET[order(df.MET$env, df.MET$rep),]
-rownames(df.MET) = 1:(p * q * v)
+rownames(df.MET) = 1:(p * b * v)
 rand = as.character(unlist(
-  lapply(X = 0:(p * q - 1), 
+  lapply(X = 0:(p * b - 1), 
          function(X) X*v+sample(1:v,v,F))))
 df.MET = df.MET[match(rand, rownames(df.MET)),]
 
@@ -106,8 +110,8 @@ cor(diag(Lam %*% t(Lam) + Psi),diag(De)) # genetic var
 cor(estR,diag(R)) # residual var
 sqrt(sum((Ge[upper.tri(Ge,diag = T)] - (Lam %*% t(Lam) + Psi)[upper.tri(Ge,diag = T)])^2)/length(Ge[upper.tri(Ge,F)])) # RMSD Ge cors
 sqrt(sum((Ce[upper.tri(Ge,diag = T)] - cov2cor(Lam %*% t(Lam) + Psi)[upper.tri(Ge,diag = T)])^2)/length(Ge[upper.tri(Ge,F)])) # RMSD Ce cors
-cor(g,rowMeans(estInt.reg)) # implicit main effect
-cor(g,rowMeans(estInt.reg + estInt.diag))
+cor(ug,rowMeans(estInt.reg)) # implicit main effect
+cor(ug,rowMeans(estInt.reg + estInt.diag))
 mean(diag(cor(matrix(u,ncol=p),estInt.reg)))
 mean(diag(cor(matrix(u,ncol=p),estInt.reg + estInt.diag)))
 
@@ -115,11 +119,11 @@ mean(diag(cor(matrix(u,ncol=p),estInt.reg + estInt.diag)))
 ## Check different components
 # Check variance matrix
 range(diag(p) - t(S) %*% S)
-range(cov2cor(Ge) - cov2cor(S %*% D %*% t(S)))
+range(cov2cor(Ge) - cov2cor(S %*% L %*% t(S)))
 # Check genotype slopes
 apply(matrix(slopes, ncol = p), 2, mean)
 apply(matrix(slopes, ncol = p), 2, var)
-plot(diag(var(matrix(slopes, ncol = p))), diag(D)); abline(a=0, b=1)
+plot(diag(var(matrix(slopes, ncol = p))), diag(L)); abline(a=0, b=1)
 # Check MET
 tapply(df.MET$y,df.MET$env,mean)
 mean(df.MET$y)
