@@ -60,6 +60,9 @@ The manuscript is currently under revision in Applied and Theoretical Genetics, 
   2) In RStudio/Posit, open project file `jbancic_GEIsim.Rproj`
   
   3) Actions:
-      i) Run scripts `01-03` independently to learn about simulating genotype by environment interaction and a MET dataset. 
+
+      i) Run scripts `01-03` independently to learn about simulating genotype by environment interaction and a MET dataset.
+     
       ii) To run a model comparison example, enter `04ModelComparison` folder. First run script `00SimulateTPEsamples` followed by `04ModelComparison.R`.
-      iii) To run a breeding simulation example, enter `05BreedingSimulation` folder. First run script `00OPrepareTPE` followed by `01CreateHaplotypes` and then different            scenarios using `RUNME` scripts.
+     
+      iii) To run a breeding simulation example, enter `05BreedingSimulation` folder. First run script `00OPrepareTPE` followed by `01CreateHaplotypes` and then different scenarios using `RUNME` scripts.
