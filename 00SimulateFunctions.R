@@ -73,6 +73,137 @@ simCmat <- function(n_groups = 1,
   # bend non-positive definite matrices
 }
 
+################################################
+
+# This function quantifies the variance explained by non-crossover 
+# and crossover interaction in a between-environment genetic correlation matrix
+
+##' @param Gmat p x p between environment genetic variance matrix
+##' @param Lam p x k matrix of environmental loadings or known covariates
+##' @param f vk-vector or vxk matrix of genotype scores or slopes
+##' @param L diagonal variance matrix of the genotype scores or slopes
+##' @param tol tolerance for minimum eigenvalues and/or covariances
+##' @param prop logical, whether proportions (or absolutes) are printed for the variances
+
+measureGEI <- function(Gmat = NULL,
+                       Lam = NULL,
+                       f = NULL,
+                       L = NULL,
+                       tol = 1e-13,
+                       prop = TRUE,
+                       verbose = TRUE) {
+  
+  if(is.null(Gmat) & is.null(Lam)){stop("One of Gmat or Lam must be supplied")}
+  if(!is.null(Gmat) & !is.null(Lam)){stop("Only one of Gmat or Lam can be supplied")}
+  
+  if(!is.null(Gmat)){SS <- svd(Gmat)
+  Lam <- SS$u[,SS$d >= tol]
+  L <- diag(SS$d[SS$d >= tol])}
+  
+  # TO DO: check for negative eigenvalues in L
+  # TO DO: add option to use Psi in var explained calculations
+  if(is.null(L)){L <- diag(k)}
+  # L is assumed to be diagonal, place check in here
+  Lam <- cbind(Lam %*% sqrt(L))
+  p <- nrow(Lam)
+  k <- ncol(Lam)
+  
+  if(is.null(f)){warning("f is not defined, proceeding without these effects")
+    print.f <- FALSE
+    f <- rep(0, 10*k)}
+  # TO DO: check that f is a matrix with k column, or a vector with length divisable by k. 
+  # How do i work this if Gmat is supplied...maybe i want u??
+  f <- matrix(c(f), ncol = k)
+  f <- f %*% diag(1/sqrt(diag(L)))
+  
+  # step 1: obtain simple main effects and common GE effects
+  u1 <- f %*% cbind(colMeans(Lam))
+  beta <- f %*% t(Lam)
+  sig1 <- sum(colMeans(Lam)^2)
+  Sig21 <- Lam %*% cbind(colMeans(Lam))
+  Sig22 <- Lam %*% t(Lam)
+  Sig <- rbind(cbind(sig1, t(Sig21)),
+               cbind(Sig21, Sig22))
+  # constraints required?
+  constraint <- FALSE
+  if(min(Sig21) <= 0){constraint <- TRUE
+  warning("Some variation associated with the main effects results in crossover GEI - constraints imposed")
+  }else{tol <- 0}
+  sig.adjust <- min(min(Sig21), 0) - tol
+  sig1.adjust <- sig1 - sig.adjust
+  sig21.adjust <- Sig21 - sig.adjust
+  
+  # step 2: Construct generalised main effects and adjust common GE effects
+  u1.star <- u1 %*% t(sig21.adjust) / sig1.adjust
+  beta.star <- beta - u1.star
+  # variance matrices
+  sig1.star <- sig21.adjust %*% t(sig21.adjust) * sig1 / sig1.adjust^2
+  Sig21.star <- sig21.adjust %*% t(Sig21 - sig21.adjust * sig1 / sig1.adjust) / sig1.adjust
+  Sig22.star <- (Lam - sig21.adjust %*% rbind(colMeans(Lam)) / sig1.adjust) %*% t(Lam - sig21.adjust %*% rbind(colMeans(Lam)) / sig1.adjust)
+  
+  # Step 3: construct common factors
+  # factor 1
+  Lam1 <- cbind(sig21.adjust / sqrt(sum(sig21.adjust^2)))
+  f1 <- cbind(u1 * sqrt(sum(sig21.adjust^2)) / sig1.adjust)
+  # TO DO: add functionality to print genotype intercepts
+  # higher order factors
+  SS <- svd(Lam - sig21.adjust %*% rbind(colMeans(Lam)) / sig1.adjust)
+  Lam22 <- SS$u
+  f22 <- f %*% SS$v %*% diag(SS$d, nrow = min(k, p))
+  # TO DO: see if we can orthogonalise the higher order factors to the first
+  # combine
+  Lam.2 <- cbind(Lam1, Lam22)
+  f.2 <- cbind(f1, f22)
+  # Factor variance matrix
+  l1 <- sum(sig21.adjust^2) * sig1 / sig1.adjust^2
+  # will reduce to zero when all covariances in sig21 are positive/zero
+  L21 <- diag(SS$d, nrow = min(k, p)) %*% t(SS$v) %*% t(rbind(colMeans(Lam))) * sqrt(sum(sig21.adjust^2)) / sig1.adjust
+  L22 <- diag(SS$d^2, nrow = min(k, p))
+  L.2 <- rbind(cbind(l1, t(L21)),
+               cbind(L21, L22))
+  L.2[L.2 < tol] <- 0
+  # Optional step: measures of variance explained
+  if(prop){varG <- sum(diag(Lam %*% t(Lam)))
+  }else{varG <- p}
+  vn <- l1 / varG
+  v1 <- p * mean(Lam %*% t(Lam)) / varG
+  v1r <- L21 * t(Lam.2[,-1]) %*% Lam1 / varG
+  vr <- cbind(diag(L22) / varG)
+  vr.bar <- vr + v1r*2
+  vc <- sum(vr.bar)
+  # TO DO: check vc = 1 - vn
+  # TO DO: work in total gen var
+  vtot <- mean(diag(Gmat))
+  # TO DO: knock out last factor (k+1) when all covariances in sig21 are positive/zero
+  
+  if (verbose) {
+    cat("\n====================================")
+    cat("\n  Measures of variance explained")
+    cat("\n====================================")
+    if (prop)  {cat("\n                        ", "Proportion")}
+    if (!prop) {cat("\n                        ", "Variance")}
+    if (!prop) {cat("\nTotal variance         :", round(vtot,2))}
+    cat("\nMain effect variance   :", round(v1,2))
+    if (prop)  {cat("\nInteraction variance   :", round(1-v1,2))}
+    if (!prop) {cat("\nInteraction variance   :", round(vtot-v1,2))}
+    cat("\n------------------------------------")
+    cat("\nNon-crossover variance :", round(vn,2))
+    cat("\nCrossover variance     :", round(vc,2))
+    cat("\n====================================\n") 
+  }
+  tmp <- list(Lam = Lam.2,
+              f = c(f.2),
+              L = L.2,
+              vm = v1,
+              vr = c(vr.bar),
+              vn = vn,
+              vc = vc,
+              constraint = constraint,
+              prop = prop)
+  if(!print.f){tmp$f <- NULL}
+  invisible(tmp)
+}
+
 
 ################################################
 
@@ -84,11 +215,11 @@ simCmat <- function(n_groups = 1,
 ##' @param disentangle (logic) disentangle GxE protion of variance to crossover and noncrossover
 ##' @param groups 
 
-measureGEI <- function(cov_mat,
-                       prop = TRUE,
-                       disentangle = FALSE,
-                       groups = NULL,
-                       old_measure = FALSE){
+measureGEI2 <- function(cov_mat,
+                        prop = TRUE,
+                        disentangle = FALSE,
+                        groups = NULL,
+                        old_measure = FALSE){
   if(!isSymmetric(cov_mat)) {stop("cov_mat is not symmetric")}
   if(!mean(cov_mat) > 0) {stop("cov_mat is not positive (semi) definite")}
   tot_var1 <- mean(diag(cov_mat))
@@ -293,8 +424,8 @@ simPheno <- function(n_genos,            # number of genotypes
                      rank = NULL, 
                      prop_spatial = 0,   # proportion of variance explained by spatial variation
                      n_cols = NULL, 
-                     n_rows = NULL) 
-{
+                     n_rows = NULL) {
+  
   require(FieldSimR)
   # Sim parameters -------------
   Ce <- as.matrix(Cmat)
@@ -309,23 +440,10 @@ simPheno <- function(n_genos,            # number of genotypes
   X <- kronecker(diag(n_envs), rep(1,n_genos*n_reps))  # design matrix
   
   # Simulate genetic effects -------------
-  # add to call if simulating variances inside the function meanG = 1, varG = 0.2,
-  # De <- diag(abs(rnorm(n_envs))) # diagonal genetic variance matrix between environments
-  # De <- diag(c(scale(rgamma(n_envs, shape = 2, scale = 0.3))*sqrt(varG) + meanG))
-  # De <- diag(rep(1,n_envs)) # homozygous
   if (length(De) != n_envs) {stop("The length of De is not equal to dimension of Cmat")}
   hist(De,20, main = "Genetic variances")
   De <- diag(De)
   Ge <- sqrt(De) %*% Ce %*% sqrt(De)  # genetic variance matrix
-  # j=1
-  # while(length(unique(sign(svd(Ge)$u[,1]))) > 1){
-  #   cat("Resampling genetic variances:",j,"\n")
-  #   De <- diag(c(scale(rgamma(n_envs, shape = 2, scale = 0.3))*sqrt(varG) + meanG))
-  #   hist(diag(De),20, main = "Genetic variances")
-  #   Ge <- sqrt(De) %*% Ce %*% sqrt(De)  # genetic variance matrix
-  #   j=j+1
-  # }
-  # cumsum(svd(Ge)$d)/sum(svd(Ge)$d)
   S <- svd(Ge)$u
   D <- diag(svd(Ge)$d)
   slopes <- scale(matrix(rnorm(n_genos*n_envs), ncol = n_envs))  # standardise the slopes for each term
@@ -347,7 +465,7 @@ simPheno <- function(n_genos,            # number of genotypes
   # Simulate spatial plot errors using FieldSimR
   if ((is.null(n_cols) & is.null(n_rows)) == T) {stop("Specify n_cols and n_rows")}
   hist(h2 <- abs(rnorm(n_envs, h2, 0.1)), main = "Heritabilities")
-  # h2 <- rep(0.4, n_envs) # HOMOGENEOUS
+  # h2 <- rep(0.4, n_envs) # homogeneous
   var_R <- diag(De)/h2 - diag(De)
   # hist(diag(De)/(diag(De) + var_R))         # plot level heritability's for each environment
   # hist(diag(De)/(diag(De) + var_R/n_reps))  # line mean heritability's for each environment
@@ -383,6 +501,5 @@ simPheno <- function(n_genos,            # number of genotypes
                     varE    = var_R, # true error variances
                     met.df  = met.df)) # simulated met dataset
 }
-
 
 # test <- simPheno(Ce, n_genos = 100, mu = 1, varE = 1, n_reps = 2, h2 = 0.3, prop_spatial = 0, n_cols = 20, n_rows = 10)

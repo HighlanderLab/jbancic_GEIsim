@@ -9,9 +9,9 @@
 # Four methods are used to simulate GxE interaction:
 #
 # Method 1: structured GxE interaction,
-# Method 2: structured GxY interaction,
-# Method 3: structured GxL interaction,
-# Method 4: structured GxY and GxL interaction.
+# Method 2: structured GxY interaction (TO DO),
+# Method 3: structured GxL interaction (TO DO),
+# Method 4: structured GxY and GxL interaction (TO DO).
 #
 # In all methods, GxE interaction is simulated using 
 # an extension of Hardin et al. (2013) with the 
@@ -22,8 +22,6 @@
 
 rm(list = ls())
 source("00SimulateFunctions.R")
-# install.packages(pkgs = "AlphaSimR")
-# library(package = "AlphaSimR")
 
 # ---- Specify parameters ----
 p  = 100  # Number of environments
@@ -54,32 +52,22 @@ plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
 plotCmat(Ce, den_order = T)$order
 
-# Calculate measures of variance explained
-De = diag(rgamma(n = p, shape = 1.5, scale = 1))
+# Measures of variance explained
+De = diag(1/rgamma(p, shape = 5, rate = 5))
+# De = diag(rgamma(n = p, shape = 1.5, scale = 1))
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
-plot(diag(Ge), svd(Ge)$u[,1]^2)
-plot(svd(Ce)$u[,1], svd(Ge)$u[,1])
-# G
-mean(Ce)
-100*sum(svd(Ce)$d*colMeans(svd(Ce)$u)^2)/sum(diag(Ce))
-measureGEI(Ce, prop = F)$Gvar
-# ~70% w/ homo gen vars
-measureGEI(Ge)$Gvar
-# ~60% G w/ het gen vars
-# nGEI
-measureGEI(Ce, disentangle = T)$nGEI
-# ~70% nGEI w/ homo gen vars, so nothing that is marginal
-measureGEI(Ge, disentangle = T)$nGEI
-# ~70% nGEI w/ het gen vars, so ~10% that is marginal
-#cGEI
-measureGEI(Ce, disentangle = T)$cGEI
-# ~30% cGEI w/ homo gen vars
-measureGEI(Ge, disentangle = T)$cGEI
-# ~30% cGEI w/ het gen vars
-# P = diag(100) - matrix(1, ncol = 100, nrow = 100)/100 # av-semi variance
-# sum(diag(Ce %*% P)) / 99 # 0.300772
-# sum(diag(matrix(mean(Ce), ncol = 100, nrow = 100) %*% P)) / 99 # 0
+measureGEI(Ge, prop = T)
 
+# ====================================
+#   Measures of variance explained
+# ====================================
+#                          Proportion
+# Main effect variance   : 0.48
+# Interaction variance   : 0.52
+# ------------------------------------
+# Non-crossover variance : 0.51
+# Crossover variance     : 0.49
+# ====================================
 
 
 # ---- 2. Example with skewed distribution of correlations ----
@@ -94,24 +82,20 @@ plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
 plotCmat(Ce, den_order = T)$order
 
-# measures of variance explained
+# Measures of variance explained
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
-# G
-100*sum(svd(Ce)$d*colMeans(svd(Ce)$u)^2)/sum(diag(Ce))
-measureGEI(Ce)$Gvar
-# ~75% G w/ homo gen vars
-measureGEI(Ge)$Gvar
-# ~65% G w/ het gen vars
-# nGEI
-measureGEI(Ce, disentangle = T)$nGEI
-# ~75% nGEI w/ homo gen vars, so nothing that is marginal
-measureGEI(Ge, disentangle = T)$nGEI
-# ~75% nGEI w/ het gen vars, so ~10% that is marginal
-#cGEI
-measureGEI(Ce, disentangle = T)$cGEI
-# ~25% cGEI w/ homo gen vars
-measureGEI(Ge, disentangle = T)$cGEI
-# ~25% cGEI w/ het gen vars
+measureGEI(Ge, prop = T)
+
+# ====================================
+#   Measures of variance explained
+# ====================================
+#                          Proportion
+# Main effect variance   : 0.58
+# Interaction variance   : 0.42
+# ------------------------------------
+# Non-crossover variance : 0.64
+# Crossover variance     : 0.36
+# ====================================
 
 
 # ii) Moderate crossover GxE
@@ -125,24 +109,20 @@ plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
 plotCmat(Ce, den_order = T)$order
 
-# measures of variance explained
+# Measures of variance explained
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
-# G
-100*sum(svd(Ce)$d*colMeans(svd(Ce)$u)^2)/sum(diag(Ce))
-measureGEI(Ce)$Gvar
-# ~60% G w/ homo gen vars
-measureGEI(Ge)$Gvar
-# ~50% G w/ het gen vars
-# nGEI
-measureGEI(Ce, disentangle = T)$nGEI
-# ~60% nGEI w/ homo gen vars, so practically nothing that is marginal
-measureGEI(Ge, disentangle = T)$nGEI
-# ~60% nGEI w/ het gen vars, so ~10% that is marginal
-#cGEI
-measureGEI(Ce, disentangle = T)$cGEI
-# ~40% cGEI w/ homo gen vars
-measureGEI(Ge, disentangle = T)$cGEI
-# ~40% cGEI w/ het gen vars
+measureGEI(Ge, prop = T)
+
+# ====================================
+#   Measures of variance explained
+# ====================================
+#                          Proportion
+# Main effect variance   : 0.37
+# Interaction variance   : 0.63
+# ------------------------------------
+# Non-crossover variance : 0.42
+# Crossover variance     : 0.58
+# ====================================
 
 
 # iii) High crossover GxE
@@ -156,24 +136,20 @@ plotCmat(Ce, den_order = T)$hist
 plotCmat(Ce, den_order = T)$data
 plotCmat(Ce, den_order = T)$order
 
-# measures of variance explained
+# Measures of variance explained
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
-# G
-100*sum(svd(Ce)$d*colMeans(svd(Ce)$u)^2)/sum(diag(Ce))
-measureGEI(Ce)$Gvar
-# ~40% G w/ homo gen vars
-measureGEI(Ge)$Gvar
-# ~35% G w/ het gen vars
-# nGEI
-measureGEI(Ce, disentangle = T)$nGEI
-# ~40% nGEI w/ homo gen vars, so practically nothing that is marginal
-measureGEI(Ge, disentangle = T)$nGEI
-# ~40% nGEI w/ het gen vars, so ~5% that is marginal
-#cGEI
-measureGEI(Ce, disentangle = T)$cGEI
-# ~60% cGEI w/ homo gen vars
-measureGEI(Ge, disentangle = T)$cGEI
-# ~60% cGEI w/ het gen vars
+measureGEI(Ge, prop = T)
+
+# ====================================
+#   Measures of variance explained
+# ====================================
+#                          Proportion
+# Main effect variance   : 0.1
+# Interaction variance   : 0.9
+# ------------------------------------
+# Non-crossover variance : 0.11
+# Crossover variance     : 0.89
+# ====================================
 
 
 # ---- 3. Example with multiple environment groups ----
@@ -190,20 +166,7 @@ plotCmat(Ce, den_order = T, groups = list(1:50,51:200))$order
 # functionality to have a different range within and between groups
 
 
-#######################################################
+# TO DO
 # Method 2: structured GxY interaction
-#######################################################
-
-# TO DO
-
-#######################################################
 # Method 3: structured GxL interaction
-#######################################################
-
-# TO DO
-
-#######################################################
 # Method 4: structured GxY and GxL interaction
-#######################################################
-
-# TO DO

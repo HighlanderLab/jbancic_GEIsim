@@ -56,7 +56,7 @@ plotCmat(Ce, den_order = TRUE)$hist
 
 # 2. Obtain and decompose between-environment variance matrix
 # and take k terms
-De = diag(rgamma(n = p, shape = 1.5, scale = 1))
+De = diag(1/rgamma(p, shape = 5, rate = 5))
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
 U = svd(Ge)$u[,1:k]
 L = diag(svd(Ge)$d[1:k])
@@ -93,7 +93,6 @@ for(i in 1:(p * b)){
 # --- Simulate plot errors and spatial variation with FieldSimR ---
 H2    = abs(rnorm(p, H2, 0.1))
 H2[H2 < 0] = 0; H2[H2 > 1] = 1
-R     = diag(diag(De) / H2 - diag(De))
 var_R = diag(De) / H2 - diag(De)
 df.error = field_trial_error(n_envs = p,
                              n_blocks = b,

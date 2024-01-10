@@ -47,11 +47,9 @@ hist(De, breaks = 100)
 Ge <- sqrt(diag(De)) %*% Ce %*% sqrt(diag(De))
 # Check
 mean(Ce[upper.tri(Ce)])
-measureGEI(Ge, prop = T,disentangle = F)
-measureGEI(Ge, prop = T,disentangle = T)
-measureGEI(Ge, prop = F,disentangle = F)
-measureGEI(Ge, prop = F,disentangle = T)
-# plotCmat(Ce)
+measureGEI(Ge, prop = T) # proportions
+measureGEI(Ge, prop = F) # variance
+# plotCmat(Ce)$heatmap
 
 #------------------------------------------------------
 #-- Simulate phenotypes

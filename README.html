@@ -392,15 +392,14 @@ randomized experimental design.</p></li>
 <li><p><code>04ModelComparison</code> folder contains scripts to run a
 single replicate of statistical model comparison. The scripts are:</p>
 <ul>
-<li><p><code>00SimulateTPEsamples</code> script creates
-<code>samplesModerateGEI.RData</code> file which is used by
-<code>04ModelComparison.R</code>.</p></li>
+<li><p><code>simulateTPE</code> script simulates a TPE and MET samples,
+and stores them in <code>samplesModerateGEI.RData</code> file which is
+used by <code>04ModelComparison.R</code>.</p></li>
 <li><p><code>samplesModerateGEI.RData</code> RData file contains
 pre-sampled true between-environment genetic correlation and variance
-matrices of dimensions 1000x1000, true genetic effects and variance
-parameters, a simulated MET dataset with 1000 environments, and 1000
-samples for constructing MET datasets of sizes 5, 10, 20, and
-50.</p></li>
+matrices of dimensions 1000x1000 to construct TPE, true genetic effects
+and variance parameters, and 1000 samples of sizes 5, 10, 20, and 50
+environments for constructing MET datasets.</p></li>
 <li><p><code>04ModelComparison.R</code> script runs a single replicate
 of statistical model comparison with a MET dataset of size 10
 environments. Models include phenotypic averages (Pheno), main effect

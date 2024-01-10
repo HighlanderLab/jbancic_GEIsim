@@ -5,8 +5,6 @@ Ce <- simCmat(n_envs   = n_envs,
               rank = 6,
               skew = 0.5)
 Ce[Ce > 1] <- 1
+# Assess the matrices
 # plotCmat(Ce, den_order = T)$heatmap
 # plotCmat(Ce, den_order = T)$hist
-# Ge <- sqrt(diag(De)) %*% Ce %*% sqrt(diag(De))
-# measureGEI(Ge, prop = T,disentangle = F)
-# measureGEI(Ge, prop = T,disentangle = T)

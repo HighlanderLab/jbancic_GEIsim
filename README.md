@@ -32,9 +32,9 @@ The manuscript is currently under revision in Applied and Theoretical Genetics, 
   
   * `04ModelComparison` folder contains scripts to run a single replicate of statistical model comparison. The scripts are:
   
-    * `00SimulateTPEsamples` script creates `samplesModerateGEI.RData` file which is used by `04ModelComparison.R`.
+    * `simulateTPE` script simulates a TPE and MET samples, and stores them in `samplesModerateGEI.RData` file which is used by `04ModelComparison.R`.
   
-    * `samplesModerateGEI.RData` RData file contains pre-sampled true between-environment genetic correlation and variance matrices of dimensions 1000x1000, true genetic effects and variance parameters, a simulated MET dataset with 1000 environments, and 1000 samples for constructing MET datasets of sizes 5, 10, 20, and 50.
+    * `samplesModerateGEI.RData` RData file contains pre-sampled true between-environment genetic correlation and variance matrices of dimensions 1000x1000 to construct TPE, true genetic effects and variance parameters, and 1000 samples of sizes 5, 10, 20, and 50 environments for constructing MET datasets.
     
     * `04ModelComparison.R` script runs a single replicate of statistical model comparison with a MET dataset of size 10 environments. Models include phenotypic averages (Pheno), main effect only (Main), compound symmetric (Comp), main plus diagonal (MDiag), diagonal only (Diag) and factor analytic 1-4 (FA1-4) models.
   

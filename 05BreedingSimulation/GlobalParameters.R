@@ -39,7 +39,7 @@ varE_EYT = 2 * 1.474541 # 1.474541 is the mean of simulated variance
 ##-- Number of cycles and environments in simulation
 nCycles = 30  
 nEnvs   = nEnvEYT # max no. of envs in a year
-nYearsTP = 5 # number of years of training population
+nYearsTP = 1 # number of years of training population
 
 ##-- Founder parents mean and variance
 # Decompose between environment variance matrix into k terms 

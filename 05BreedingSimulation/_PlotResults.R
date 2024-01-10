@@ -77,10 +77,10 @@ temp[temp$variable %in% c("acc_Mean_METtoTPE") & temp$Stage %in% c("EYT"),]$valu
 
 # Rename and recode variables
 temp$variable <- recode_factor(temp$variable,
-                               `Mean_TPE` = "Mean in TPE",
+                               `Mean_TPE` = "Main effects in TPE",
                                `SD_TPE`   = "SD_TPE",
                                `SI_TPE`   = "SI_TPE",
-                               `Mean_MET` = "Mean in MET",
+                               `Mean_MET` = "Main effects in MET",
                                `SD_MET`   = "SD_MET",
                                `SI_MET`   = "SI_MET",
                                `Mean_subMET`  = "Mean_subMET",
@@ -91,7 +91,7 @@ temp$variable <- recode_factor(temp$variable,
                                `estSI_MET`    = "estSI_MET",
                                `MeanG_TPE`    = "MeanG_TPE",
                                `MeanG_subTPE` = "MeanG_subTPE",
-                               `VarG_TPE`     = "Variance in TPE",
+                               `VarG_TPE`     = "Main effects in TPE ",
                                `VarG_subTPE`  = "VarG_subTPE",
                                `VarMeanG_TPE` = "VarMeanG_TPE",
                                `VarMeanG_subTPE` = "VarMeanG_subTPE",
@@ -105,7 +105,7 @@ temp$variable <- recode_factor(temp$variable,
                                `VarD_subTPE`  = "VarD_subTPE",
                                `MeanG_MET`    = "MeanG_MET",
                                `MeanG_subMET` = "MeanG_subMET",
-                               `VarG_MET`     = "Variance in MET",
+                               `VarG_MET`     = "Main effects in MET ",
                                `VarG_subMET`  = "VarG_subMET",
                                `VarMeanG_MET` = "VarMeanG_MET",
                                `VarMeanG_subMET` = "VarMeanG_subMET",
@@ -119,8 +119,8 @@ temp$variable <- recode_factor(temp$variable,
                                `VarD_subMET`  = "VarD_subMET",
                                `estVar_MET`   = "estVar_MET",
                                `acc_Mean_subMETtoMET` = "Mean_subMETtoMET", # cor (gv,gv)
-                               `acc_Mean_estMETtoTPE` = " Main effect to TPE",
-                               `acc_Mean_estMETtoMET` = " Main effect to MET",
+                               `acc_Mean_estMETtoTPE` = " Main effects in TPE",
+                               `acc_Mean_estMETtoMET` = " Main effects in MET",
                                `acc_Mean_METtoTPE`    = " MET-TPE alignment", # cor (gv,gv)
                                `acc_Mean_subMETtoTPE` = "Mean_subMETtoTPE", # cor (gv,gv)
                                `acc_SD_METtoTPE`      = "SD_METtoTPE",
@@ -181,7 +181,7 @@ palette <- (c(rep("black",1),
 # Plot - mean values
 #-----------------------------------------------------------------------
 (a <- temp %>%
-    filter((variable %in% c("Mean in TPE","Mean in MET"))) %>%
+    filter((variable %in% c("Main effects in TPE","Main effects in MET"))) %>%
     filter((Stage %in% c("HDRW"))) %>%
     # filter(Year > -3 & Year < 18) %>%
     droplevels() %>% 
@@ -204,7 +204,7 @@ ggsave(plot = a, filename ="01trackProgress_Mean.pdf", width = 4, height = 3, sc
 
 ##
 (b <- temp %>%
-    filter((variable %in% c("Variance in TPE", "Variance in MET"))) %>%
+    filter((variable %in% c("Main effects in TPE ", "Main effects in MET "))) %>%
     filter((Stage %in% c("HDRW"))) %>%
     # filter(Year > 20) %>%
     droplevels() %>% 
@@ -226,7 +226,7 @@ ggsave(plot = b, filename ="02trackProgress_Var.pdf", width = 4, height = 3, sca
 
 ##
 (c <- temp %>%
-    filter((variable %in% c(" MET-TPE alignment"," Main effect to TPE"," Main effect to MET"))) %>%
+    filter((variable %in% c(" MET-TPE alignment"," Main effects in TPE"," Main effects in MET"))) %>%
     filter((Stage %in% c("HDRW"))) %>%
     # filter(Year > 20) %>%
     droplevels() %>% 

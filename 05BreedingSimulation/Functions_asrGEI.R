@@ -270,8 +270,8 @@ calcSelCriteria = function(pop, nEnvs = NULL, nEnvsMET = NULL, aLamTPE = NULL, d
     estSI   = NA
   } else {
     estMean = apply(pop@pheno[,1:nEnvs], 1, mean)
-    tmp = sweep(pop@pheno, MARGIN = 2, STATS = colMeans(pop@pheno))
     estSD   = apply(tmp[,1:nEnvs], 1, sd)
+    tmp = sweep(pop@pheno, MARGIN = 2, STATS = colMeans(pop@pheno))
     estMean_scaled = scale(apply(tmp[,1:nEnvs], 1, mean), scale = T, center = F)
     estSI   = weightMean*estMean_scaled - weightSD*estSD
   }

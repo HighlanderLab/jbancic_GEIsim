@@ -9,7 +9,6 @@
 # a MET dataset. This code is also provided in Appendix 1.
 
 # ---- Clean environment and load functions and packages ----
-
 rm(list = ls())
 source("00SimulateFunctions.R")
 
@@ -38,7 +37,7 @@ tau = rnorm(p, 0, 1)
 Ce = matrix(0, p, p)
 Ce[upper.tri(Ce,F)] = runif(p * (p - 1)/2, 0.4, 1)
 Ce = Ce + t(Ce); diag(Ce) = 1
-De = diag(rgamma(n = p, shape = 1.5, scale = 1))
+De = diag(1/rgamma(p, shape = 5, rate = 5))
 Ge = sqrt(De) %*% Ce %*% sqrt(De)
 
 # 2. Decompose Ge and take first k terms
@@ -77,12 +76,10 @@ df.MET = data.frame(
   )
 
 # Order MET and randomise by trial
-df.MET = df.MET[order(df.MET$env, df.MET$rep),]
-rownames(df.MET) = 1:(p * b * v)
-rand = as.character(unlist(
-  lapply(X = 0:(p * b - 1), 
-         function(X) X*v+sample(1:v,v,F))))
-df.MET = df.MET[match(rand, rownames(df.MET)),]
+df.MET = df.MET[order(df.MET$env, df.MET$rep), ]
+for(i in 0:(p * b - 1)){
+  df.MET[i * v + 1:v,] = df.MET[i * v + 1:v, ][sample(1:v, v, F), ]
+}
 
 #> Run model
 asr = asreml(y ~ 1 + env,
@@ -92,6 +89,9 @@ asr = asreml(y ~ 1 + env,
              na.action = na.method("include"),
              data      = df.MET)
 
+while (!asr$converge) {
+  asr = update.asreml(asr)
+}
 # save.image("Paper_ToyExample.RData")
 
 ########################################################################
@@ -118,17 +118,16 @@ mean(diag(cor(matrix(u,ncol=p),estInt.reg + estInt.diag)))
 ########################################################################
 ## Check different components
 # Check variance matrix
-range(diag(p) - t(S) %*% S)
+range(diag(k) - t(S) %*% S)
 range(cov2cor(Ge) - cov2cor(S %*% L %*% t(S)))
 # Check genotype slopes
 apply(matrix(slopes, ncol = p), 2, mean)
 apply(matrix(slopes, ncol = p), 2, var)
-plot(diag(var(matrix(slopes, ncol = p))), diag(L)); abline(a=0, b=1)
+plot(diag(var(matrix(slopes, ncol = k))), diag(L)); abline(a=0, b=1)
 # Check MET
-tapply(df.MET$y,df.MET$env,mean)
-mean(df.MET$y)
-tapply(df.MET$u,df.MET$env,var); mean(tapply(df.MET$u,df.MET$env,var))
-tapply(df.MET$e,df.MET$env,var); mean(tapply(df.MET$e,df.MET$env,var))
+tapply(df.MET$y,df.MET$env,mean); mean(df.MET$y)
+tapply(df.MET$u,df.MET$env,var);  mean(tapply(df.MET$u,df.MET$env,var))
+tapply(df.MET$e,df.MET$env,var);  mean(tapply(df.MET$e,df.MET$env,var))
 # Check plot-level heritability
 tapply(df.MET$u,df.MET$env,var)/(tapply(df.MET$u,df.MET$env,var)+tapply(df.MET$e,df.MET$env,var))
 mean(tapply(df.MET$u,df.MET$env,var)/(tapply(df.MET$u,df.MET$env,var)+tapply(df.MET$e,df.MET$env,var)))
@@ -142,7 +141,7 @@ plotCmat(Ge[plotCmat(Ce)$order,plotCmat(Ce)$order])$heat
 library(ggplot2)
 ## OP-RMSD plot 
 OP   <- mean(S[,1]) * slopes[1:v] # Lam * scores
-dev  <- matrix(slopes, ncol = p)[,2:p] %*% t(S[,2:p]) # higher order factors
+dev  <- matrix(slopes, ncol = k)[,2:k] %*% t(S[,2:k]) # higher order factors
 RMSD <- sqrt(rowMeans(dev^2)) # square root of means
 df   <- data.frame(geno = as.factor(1:v), OP, RMSD)
 
@@ -156,14 +155,14 @@ df   <- data.frame(geno = as.factor(1:v), OP, RMSD)
 ## Regression plot 
 temp <- data.frame(Env    = rep(1:p, each = v),
                    geno   = as.factor(1:v),
-                   Lam    = rep(S[,1:p], each = v),
-                   f      = c(rep(1,p) %x% matrix(slopes, ncol = p)[,1:p]),
-                   Source = as.factor(rep(paste("Term",1:p, sep = " "), each = v*p)),
-                   CVE    = c(matrix(slopes, ncol = p)[,2:p] %*% t(S[,2:p])))
+                   Lam    = rep(S[,1:k], each = v),
+                   f      = c(rep(1,p) %x% matrix(slopes, ncol = k)[,1:k]),
+                   Source = as.factor(rep(paste("Term",1:k, sep = " "), each = v*p)),
+                   CVE    = c(matrix(slopes, ncol = k)[,2:k] %*% t(S[,2:k])))
 # Rename factor names
 temp$Source <- factor(temp$Source, levels = paste("Term",1:p, sep = " "))
-levels(temp$Source)[7] <- "Term p"
-take <- c(paste("Term",c(1:2), sep = " "),"Term p")
+levels(temp$Source)[7] <- "Term k"
+take <- c(paste("Term",c(1:2), sep = " "),"Term k")
 # Set up horizontal and vertical lines
 meanLoad <- -mean(S[,1])
 vlines <- data.frame(Source = unique(temp$Source)[c(1:2,7)], 
