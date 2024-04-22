@@ -45,9 +45,9 @@ GEI <- "Moderate"
 source("GlobalParameters.R")
 
 # Import simulated target population of environments (TPE) 
-Ge <- readRDS("../Ge.rds")
-Ce <- cov2cor(Ge)     # Load between environment variance matrix
-De <- diag(diag(Ge))  # Load environment variances
+Ge <- readRDS("../Ge_moderate.rds") # Load presimulated Ge for moderate GEI from the paper
+Ce <- cov2cor(Ge)
+De <- diag(diag(Ge))
 
 # Run 20 years of breeding across multiple replicates
 for (Rep in 1:nReps) {
