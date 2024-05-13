@@ -35,7 +35,7 @@ library(AlphaSimR)
 
 # Simulation parameters
 # Ge           # between-environment genetic variance matrix, obtained from Supplementary Script S1
-Ge <- readRDS("Ge_moderate.rds") # alternatively, load a presimulated Ge for moderate GEI from the paper
+Ge <- readRDS("Ge_ModerateGEI.rds") # alternatively, load a presimulated Ge for moderate GEI from the paper
 p <- 1000    # number of environments in the TPE
 v <- 400     # number of genotypes in the breeding population
 r <- 2       # number of replicate blocks in each environment

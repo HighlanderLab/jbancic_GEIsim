@@ -7,28 +7,30 @@
 # ======================================================================
 #
 # Description:
-# This script simulates a line breeding program using phenotypic selection. 
-# It tracks the breeding progress over years by summarizing measures like 
-# genetic mean and variance (both observed in MET and expected in TPE), 
-# accuracy (observed and expected), and MET-TPE alignment. The simulation 
-# leverages FieldSimR and AlphaSimR packages to model GEI using a reduced 
-# rank multiplicative model.
+# This script demonstates how to simulate a phenotypic line breeding program 
+# with GEI using FieldSimR functionality. AlphaSimR is used to generate an 
+# additive genetic trait with population structure and FieldSimR is used to 
+# generate correlated plot errors based on a randomised complete block design. 
+# Each year, the simulation tracks the breeding progress by summarizing measures 
+# of genetic mean (average of genotype main effects in MET and TPE), variance 
+# (variance of genotype main effects in MET and TPE), accuracy of main genotype 
+# effects in MET and TPE, and MET-TPE alignment. 
 #
 # The simulation involves six steps:
 # 1. Import global parameters and a between-environment genetic variance
-#     matrix that constitutes the TPE
+#     matrix, Ge, that constitutes the TPE.
 # 2. Simulate founder parents with AlphaSimR and their genotype slopes with 
-#     FieldSimR's wrapper function multi_asr_input()
-# 3. Sample a subset of environments for each year's MET from the full TPE 
+#     FieldSimR's wrapper function multi_asr_input().
+# 3. Sample a subset of environments for each year's MET from the full TPE.
 # 4. Fill the breeding pipeline with unique genotypes using AlphaSimR
-# 5. Perform yearly selections across breeding stages based on phenotypic 
+# 5. Perform yearly selections across breeding stages based on phenotypic.
 #     values simulated with FieldSimR's wrapper functions multi_asr_output() 
 #     for simulating genetic values, field_trial_error() for simulating plot 
 #     errors with spatial variation and make_phenotypes() to combine genotype
-#     values and errors
+#     values and errors.
 # 6. Plot measures of genetic mean and variance (both observed in MET and 
 #     expected in TPE), accuracy of phenotypic selection (both observed 
-#     in MET and expected in TPE), and MET-TPE alignment
+#     in MET and expected in TPE), and MET-TPE alignment.
 # ======================================================================
 
 # Load necessary libraries
@@ -45,7 +47,7 @@ GEI <- "Moderate"
 source("GlobalParameters.R")
 
 # Import simulated target population of environments (TPE) 
-Ge <- readRDS("../Ge_moderate.rds") # Load presimulated Ge for moderate GEI from the paper
+Ge <- readRDS("../Ge_ModerateGEI.rds") # Load presimulated Ge for moderate GEI from the paper
 Ce <- cov2cor(Ge)
 De <- diag(diag(Ge))
 
