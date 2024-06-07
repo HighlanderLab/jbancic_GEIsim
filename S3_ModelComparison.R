@@ -2,7 +2,7 @@
 ##########################################################
 #
 # Supplementary Script S3: A framework for simulating GEI
-# 
+#
 # Comparison of models fitted to a simulated MET dataset
 #
 # Script authors: J. Bancic and D.J. Tolhurst
@@ -11,15 +11,15 @@
 
 # This script briefly demonstrates model comparison using ASReml-R
 
-# It is important to note that the models here are intended 
+# It is important to note that the models here are intended
 # for demonstration purposes only, and should be tailored to
-# the research objectives. 
+# the research objectives.
 
 # Load ASReml-R
 library(asreml)
 
 # The following are generated in Supplementary Script S2
-met_df   # MET data frame 
+met_df   # MET data frame
 gvs_met  # true genetic values in MET
 gvs_tpe  # true genetic values in MET
 pe <- length(levels(gvs_met$env))
@@ -48,16 +48,16 @@ ge_met_true <- with(gvs_met, tapply(gv.Trait1, list(id, env), mean))
 
 #-- Expected accuracies
 # MET-TPE alignment
-output[output$Model == "MET-TPE",]$r_g <- 
+output[output$Model == "MET-TPE",]$r_g <-
   sqrt(Ge_vars[1,2]/(Ge_vars[1,2] + Ge_vars[2,2]/pm))
 # Main effect accuracy in TPE
-output[output$Model == "Expected",]$r_g <- 
+output[output$Model == "Expected",]$r_g <-
   sqrt(Ge_vars[1,2]/(Ge_vars[1,2] + Ge_vars[2,2]/pm + sigm2e/pm/r))
 # Main effect accuracy in MET
-output[output$Model == "Expected",]$r_m <- 
+output[output$Model == "Expected",]$r_m <-
   sqrt((Ge_vars[1,2] + Ge_vars[2,2]/pm)/(Ge_vars[1,2] + Ge_vars[2,2]/pm + sigm2e/pm/r))
 # Accuracy for GE effects in MET
-output[output$Model == "Expected",]$r_ge <- 
+output[output$Model == "Expected",]$r_ge <-
   sqrt((Ge_vars[1,2] + Ge_vars[2,2])/(Ge_vars[1,2] + Ge_vars[2,2] + sigm2e/r))
 
 
@@ -66,7 +66,7 @@ output[output$Model == "Expected",]$r_ge <-
 asr.main <- asreml(y.Trait1 ~ 1 + env,
                    random   = ~ id + diag(env):block,
                    residual = ~ dsum(~ ar1(col):ar1(row) | env),
-                   data     = met_df, 
+                   data     = met_df,
                    workspace = "1Gb")
 while (asr.main$converge != TRUE) {asr.main = update.asreml(asr.main)}
 
@@ -200,15 +200,18 @@ cat("r_ge: ", output[output$Model == "FA1",]$r_ge <- mean(diag(cor(ge_tot_met_pr
 
 #-- View output example
 output
-#        GEI Envs    Model    LogLik      AIC       r_m       r_g      r_ge
-# 1 Moderate   20  MET-TPE        NA       NA 0.9501404        NA        NA
-# 2 Moderate   20 Expected        NA       NA 0.8886864 0.9353211 0.7062228
-# 3 Moderate   20     Main -16786.62 33735.25 0.9012443 0.9297892 0.5860806
-# 4 Moderate   20     Comp -16266.80 32697.61 0.9140460 0.9406453 0.7364472
-# 5 Moderate   20    MDiag -16015.77 32233.53 0.9010404 0.9251952 0.7606309
-# 6 Moderate   20     Diag -16406.36 33012.72 0.9289324 0.9503625 0.6713395
-# 7 Moderate   20      FA1 -15823.94 31887.89 0.8984942 0.9296549 0.7546676
+#        GEI Envs    Model    LogLik      AIC       r_g       r_m      r_ge
+# 1 Moderate   20  MET-TPE        NA       NA 0.9505832        NA        NA
+# 2 Moderate   20 Expected        NA       NA 0.8824650 0.9283407 0.6847761
+# 3 Moderate   20     Main -18232.28 36626.55 0.9005162 0.9356465 0.6298711
+# 4 Moderate   20     Comp -17659.58 35483.16 0.9002333 0.9438785 0.7504266
+# 5 Moderate   20    MDiag -17243.38 34688.76 0.8954647 0.9232279 0.7883645
+# 6 Moderate   20     Diag -17629.80 35459.60 0.8979417 0.9538648 0.6513185
+# 7 Moderate   20      FA1 -17035.66 34311.31 0.8980254 0.9348491 0.7860447
+
+
 
 # end of script
+
 
 

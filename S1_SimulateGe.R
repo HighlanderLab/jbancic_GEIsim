@@ -36,7 +36,7 @@ library(FieldSimR)
 p <- 1000      # number of environments in the TPE
 # Genetic variance parameters
 alpha <- 1.5   # shape of the gamma distribution
-beta <- 1      # scale of the gamma distribution 
+beta  <- 1     # scale of the gamma distribution 
 # Genetic correlation parameters
 rho <- 0.2     # baseline genetic correlation between environments in the TPE
 k <- 7         # rank of the between-environment genetic correlation matrix

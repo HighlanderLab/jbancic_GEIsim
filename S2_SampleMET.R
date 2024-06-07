@@ -36,9 +36,9 @@ library(AlphaSimR)
 # Simulation parameters
 # Ge           # between-environment genetic variance matrix, obtained from Supplementary Script S1
 Ge <- readRDS("Ge_ModerateGEI.rds") # alternatively, load a presimulated Ge for moderate GEI from the paper
-p <- 1000    # number of environments in the TPE
-v <- 400     # number of genotypes in the breeding population
-r <- 2       # number of replicate blocks in each environment
+p  <- 1000    # number of environments in the TPE
+v  <- 400     # number of genotypes in the breeding population
+r  <- 2       # number of replicate blocks in each environment
 # i.e. v*p = 400,000 genotype by environment combinations
 # Genetic architecture and trait parameters
 nchr <- 20   # number of chromosomes
@@ -58,8 +58,8 @@ library(FieldSimR)
 Ce <- cov2cor(Ge) # obtain between-environment genetic correlation matrix
 de <- diag(Ge)    # obtain diagonal genetic variance matrix
 input_asr <- multi_asr_input(nenvs = p, 
-                             var = de, 
-                             corA = Ce, 
+                             var   = de, 
+                             corA  = Ce, 
                              nterms = k)
 covs_tpe <- input_asr$cov.mat 
 
@@ -72,7 +72,7 @@ pop <- quickHaplo(nInd = v,
 SP <- SimParam$new(pop)
 SP$addTraitA(nQtlPerChr = nQTN,
              mean = input_asr$mean,
-             var = input_asr$var,
+             var  = input_asr$var,
              corA = input_asr$corA)
 pop <- newPop(pop)
 
@@ -108,7 +108,8 @@ gvs_met <- droplevels(gvs_tpe[gvs_tpe$env %in% envs_met$sample[[1]],]) # take fi
 head(gvs_met) # genetic values for all genotypes and environments sampled in the MET
 
 # Summarise the MET-TPE alignment based on the true mean genetic values in the MET and TPE
-cor(with(gvs_met, tapply(gv.Trait1, id, mean)), with(gvs_tpe, tapply(gv.Trait1, id, mean)))
+cor(with(gvs_met, tapply(gv.Trait1, id, mean)), 
+    with(gvs_tpe, tapply(gv.Trait1, id, mean)))
 # note the expected MET-TPE alignment is
 Ge_vars <- measure_variances(Ge)
 sqrt(Ge_vars[1,2]/(Ge_vars[1,2] + Ge_vars[2,2]/pm))

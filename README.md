@@ -22,11 +22,13 @@ Citation:
   * `README.md` is this file.
 
   * `jbancic_GEIsim.Rproj` is the RStudio/Posit project file (to set the working directory etc.).
+  
+  * `S0_WorkingExample` demonstrates how to simulate a small example TPE with 100 environments from which a MET dataset is sampled with 10 environments using base R functions. This script is equivalent to Appendix C in the manuscript.
 
-  * `SuppScriptS1` demonstrates how to simulate a reduced rank between-environment genetic variance matrix, Ge, that captures genotype by environment interaction.
+  * `S1_SimulateGe` demonstrates how to simulate a reduced rank between-environment genetic variance matrix, Ge, that captures genotype by environment interaction.
 
-  * `SuppScriptS2` demonstrates how to simulate a MET dataset that captures genotype by environment interaction and spatial variation within environments.
+  * `S2_SampleMET` demonstrates how to simulate a MET dataset that captures genotype by environment interaction and spatial variation within environments.
 
-  * `SuppScriptS3` demonstrates model comparison using ASReml-R with a simulated MET dataset generated in `SuppScriptS2`.
+  * `S3_ModelComparison` demonstrates model comparison using ASReml-R with a simulated MET dataset generated in `S2_SampleMET`.
 
-  * `SuppScriptsS4` demonstrates how to simulate a phenotypic line breeding program in the presence of genotype by environment interaction.
+  * `S4_BreedingProgrammeComparison` demonstrates how to simulate a phenotypic line breeding program in the presence of genotype by environment interaction.
