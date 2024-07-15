@@ -6,15 +6,15 @@ This repository contains supplementary R scripts that demonstrate the simulation
 
 Citation:
 
-@article{Bancic2024,
-    title = {A framework for simulating genotype by environment interaction using multiplicative models},
-    author = {Bančič, Jon and Gorjanc, Gregor and Tolhurst, Daniel},
-    journal = {Research Square},
-    year = {2024},
-    note = {Preprint version 1, 28 January 2024},
-    doi = {10.21203/rs.3.rs-3855188/v1},
-    url = {https://doi.org/10.21203/rs.3.rs-3855188/v1}
-}
+    @article{Bancic2024,
+        title = {A framework for simulating genotype by environment interaction using multiplicative models},
+        author = {Bančič, Jon and Gorjanc, Gregor and Tolhurst, Daniel},
+        journal = {Research Square},
+        year = {2024},
+        note = {Preprint version 1, 28 January 2024},
+        doi = {10.21203/rs.3.rs-3855188/v1},
+        url = {https://doi.org/10.21203/rs.3.rs-3855188/v1}
+    }
 
 
 ## Repository contents
